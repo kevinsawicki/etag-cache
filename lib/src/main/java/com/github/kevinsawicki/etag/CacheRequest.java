@@ -17,6 +17,7 @@ package com.github.kevinsawicki.etag;
 
 import static java.net.HttpURLConnection.HTTP_NOT_MODIFIED;
 
+import com.github.kevinsawicki.etag.EtagCache.CacheResponse;
 import com.github.kevinsawicki.http.HttpRequest;
 
 import java.io.IOException;
@@ -56,7 +57,7 @@ public class CacheRequest extends HttpRequest {
 
   private final EtagCache cache;
 
-  private InputStream stream;
+  private CacheResponse response;
 
   private boolean etagAdded;
 
@@ -90,17 +91,12 @@ public class CacheRequest extends HttpRequest {
     this.cache = cache;
   }
 
-  private void closeCacheStream() {
-    if (stream == null)
+  private void closeCacheResponse() {
+    if (response == null)
       return;
 
-    try {
-      stream.close();
-    } catch (IOException ignored) {
-      // Ignored
-    } finally {
-      stream = null;
-    }
+    response.close();
+    response = null;
   }
 
   @Override
@@ -108,10 +104,9 @@ public class CacheRequest extends HttpRequest {
     // Only attempt to add an etag once
     if (!etagAdded) {
       etagAdded = true;
-      String etag = cache.getEtag(getConnection());
-      stream = cache.getStream(getConnection());
-      if (etag != null && stream != null)
-        ifNoneMatch(etag);
+      response = cache.get(getConnection());
+      if (response != null)
+        ifNoneMatch(response.eTag);
     }
 
     return super.closeOutput();
@@ -122,29 +117,29 @@ public class CacheRequest extends HttpRequest {
     final int code = super.code();
 
     if (code != HTTP_NOT_MODIFIED)
-      closeCacheStream();
+      closeCacheResponse();
     return code;
   }
 
   @Override
   public HttpRequest disconnect() {
-    closeCacheStream();
+    closeCacheResponse();
 
     return super.disconnect();
   }
 
   @Override
   public InputStream stream() throws HttpRequestException {
-    if (notModified() && stream != null)
-      return stream;
+    if (notModified() && response != null)
+      return response.body;
 
     if (ok()) {
-      InputStream streamWrapper = cache.putStream(getConnection());
+      final InputStream streamWrapper = cache.put(getConnection());
       if (streamWrapper != null)
         return streamWrapper;
     }
 
-    closeCacheStream();
+    closeCacheResponse();
 
     return super.stream();
   }

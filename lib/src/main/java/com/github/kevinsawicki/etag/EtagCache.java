@@ -23,6 +23,7 @@ import com.jakewharton.DiskLruCache;
 import com.jakewharton.DiskLruCache.Editor;
 import com.jakewharton.DiskLruCache.Snapshot;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -68,6 +69,35 @@ public class EtagCache {
       return new EtagCache(file, size);
     } catch (IOException e) {
       return null;
+    }
+  }
+
+  /**
+   * Get cached response
+   */
+  public static class CacheResponse implements Closeable {
+
+    /**
+     * ETag of response
+     */
+    public final String eTag;
+
+    /**
+     * Body of response
+     */
+    public final InputStream body;
+
+    private final Snapshot snapshot;
+
+    CacheResponse(final String eTag, final InputStream body,
+        final Snapshot snapshot) {
+      this.eTag = eTag;
+      this.body = body;
+      this.snapshot = snapshot;
+    }
+
+    public void close() {
+      snapshot.close();
     }
   }
 
@@ -219,12 +249,12 @@ public class EtagCache {
   }
 
   /**
-   * Get cached etag for connection
+   * Get cached response for connection
    *
    * @param connection
    * @return etag or null if not in cache or connection isn't cacheable
    */
-  public String getEtag(final URLConnection connection) {
+  public CacheResponse get(final URLConnection connection) {
     final String key = getKey(connection);
     if (key == null)
       return null;
@@ -239,32 +269,16 @@ public class EtagCache {
       return null;
 
     try {
-      return snapshot.getString(ETAG);
-    } catch (IOException e) {
-      return null;
-    } finally {
-      snapshot.close();
-    }
-  }
-
-  /**
-   * Get cached stream
-   *
-   * @param connection
-   * @return cached stream or null if not in cache or connection isn't cacheable
-   */
-  public InputStream getStream(final URLConnection connection) {
-    final String key = getKey(connection);
-    if (key == null)
-      return null;
-
-    Snapshot snapshot;
-    try {
-      snapshot = cache.get(key);
+      final String etag = snapshot.getString(ETAG);
+      if (etag != null && etag.length() > 0) {
+        final InputStream body = snapshot.getInputStream(BODY);
+        if (body != null)
+          return new CacheResponse(etag, body, snapshot);
+      }
     } catch (IOException e) {
       return null;
     }
-    return snapshot != null ? snapshot.getInputStream(BODY) : null;
+    return null;
   }
 
   /**
@@ -273,7 +287,7 @@ public class EtagCache {
    * @param connection
    * @return input stream that will be cached, null if cannot be cached
    */
-  public InputStream putStream(final URLConnection connection) {
+  public InputStream put(final URLConnection connection) {
     final String key = getKey(connection);
     if (key == null)
       return null;

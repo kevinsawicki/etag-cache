@@ -64,15 +64,13 @@ public class EtagCacheTest extends ServerTestCase {
     EtagCache cache = EtagCache.create(file, ONE_MB);
     assertNotNull(cache);
     CacheRequest request = CacheRequest.get(url, cache);
-    assertNull(cache.getEtag(request.getConnection()));
-    assertNull(cache.getStream(request.getConnection()));
+    assertNull(cache.get(request.getConnection()));
     assertTrue(request.ok());
     assertEquals("hello", request.body());
     request = CacheRequest.get(url, cache);
     assertTrue(request.notModified());
     assertEquals("hello", request.body());
-    assertNotNull(cache.getEtag(request.getConnection()));
-    assertNotNull(cache.getStream(request.getConnection()));
+    assertNotNull(cache.get(request.getConnection()));
   }
 
   /**
@@ -98,14 +96,12 @@ public class EtagCacheTest extends ServerTestCase {
     EtagCache cache = EtagCache.create(file, ONE_MB);
     assertNotNull(cache);
     CacheRequest request = CacheRequest.get(url, cache);
-    assertNull(cache.getEtag(request.getConnection()));
-    assertNull(cache.getStream(request.getConnection()));
+    assertNull(cache.get(request.getConnection()));
     assertTrue(request.ok());
     assertEquals("hello", request.body());
     request = CacheRequest.get(url, cache);
     assertTrue(request.ok());
     assertEquals("hello", request.body());
-    assertNotNull(cache.getEtag(request.getConnection()));
-    assertNotNull(cache.getStream(request.getConnection()));
+    assertNotNull(cache.get(request.getConnection()));
   }
 }
