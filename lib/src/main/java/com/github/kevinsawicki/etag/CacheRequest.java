@@ -68,8 +68,8 @@ public class CacheRequest extends HttpRequest {
    * @param cache
    * @throws HttpRequestException
    */
-  public CacheRequest(CharSequence url, String method, EtagCache cache)
-      throws HttpRequestException {
+  public CacheRequest(final CharSequence url, final String method,
+      final EtagCache cache) throws HttpRequestException {
     super(url, method);
 
     this.cache = cache;
@@ -83,7 +83,7 @@ public class CacheRequest extends HttpRequest {
    * @param cache
    * @throws HttpRequestException
    */
-  public CacheRequest(URL url, String method, EtagCache cache)
+  public CacheRequest(final URL url, final String method, final EtagCache cache)
       throws HttpRequestException {
     super(url, method);
 
