@@ -1,0 +1,111 @@
+/*
+ * Copyright 2012 Kevin Sawicki <kevinsawicki@gmail.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.github.kevinsawicki.etag;
+
+import static com.github.kevinsawicki.etag.EtagCache.ONE_MB;
+import static com.github.kevinsawicki.http.HttpRequest.HEADER_ETAG;
+import static com.github.kevinsawicki.http.HttpRequest.HEADER_IF_NONE_MATCH;
+import static java.net.HttpURLConnection.HTTP_NOT_MODIFIED;
+import static java.net.HttpURLConnection.HTTP_OK;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.eclipse.jetty.server.Request;
+import org.junit.Test;
+
+/**
+ * Unit tests of {@link EtagCache}
+ */
+public class EtagCacheTest extends ServerTestCase {
+
+  /**
+   * Verify request is inserted in cache and later retrievable
+   *
+   * @throws Exception
+   */
+  @Test
+  public void cachedRequest() throws Exception {
+    String url = setUp(new RequestHandler() {
+
+      @Override
+      public void handle(Request request, HttpServletResponse response) {
+        response.setHeader(HEADER_ETAG, "1234");
+        if ("1234".equals(request.getHeader(HEADER_IF_NONE_MATCH)))
+          response.setStatus(HTTP_NOT_MODIFIED);
+        else {
+          write("hello");
+          response.setStatus(HTTP_OK);
+        }
+      }
+    });
+
+    File file = File.createTempFile("cache", ".dir");
+    assertTrue(file.delete());
+    assertTrue(file.mkdirs());
+    EtagCache cache = EtagCache.create(file, ONE_MB);
+    assertNotNull(cache);
+    CacheRequest request = CacheRequest.get(url, cache);
+    assertNull(cache.getEtag(request.getConnection()));
+    assertNull(cache.getStream(request.getConnection()));
+    assertTrue(request.ok());
+    assertEquals("hello", request.body());
+    request = CacheRequest.get(url, cache);
+    assertTrue(request.notModified());
+    assertEquals("hello", request.body());
+    assertNotNull(cache.getEtag(request.getConnection()));
+    assertNotNull(cache.getStream(request.getConnection()));
+  }
+
+  /**
+   * Verify server that always ignores the If-None-Match header
+   *
+   * @throws Exception
+   */
+  @Test
+  public void etagIgnored() throws Exception {
+    String url = setUp(new RequestHandler() {
+
+      @Override
+      public void handle(Request request, HttpServletResponse response) {
+        response.setHeader(HEADER_ETAG, "1234");
+        write("hello");
+        response.setStatus(HTTP_OK);
+      }
+    });
+
+    File file = File.createTempFile("cache", ".dir");
+    assertTrue(file.delete());
+    assertTrue(file.mkdirs());
+    EtagCache cache = EtagCache.create(file, ONE_MB);
+    assertNotNull(cache);
+    CacheRequest request = CacheRequest.get(url, cache);
+    assertNull(cache.getEtag(request.getConnection()));
+    assertNull(cache.getStream(request.getConnection()));
+    assertTrue(request.ok());
+    assertEquals("hello", request.body());
+    request = CacheRequest.get(url, cache);
+    assertTrue(request.ok());
+    assertEquals("hello", request.body());
+    assertNotNull(cache.getEtag(request.getConnection()));
+    assertNotNull(cache.getStream(request.getConnection()));
+  }
+}
