@@ -130,10 +130,13 @@ public class CacheRequest extends HttpRequest {
 
   @Override
   public InputStream stream() throws HttpRequestException {
-    if (notModified() && response != null)
+    if (notModified() && response != null) {
+      cache.registerHit();
       return response.body;
+    }
 
     if (ok()) {
+      cache.registerMiss();
       final InputStream streamWrapper = cache.put(getConnection());
       if (streamWrapper != null)
         return streamWrapper;

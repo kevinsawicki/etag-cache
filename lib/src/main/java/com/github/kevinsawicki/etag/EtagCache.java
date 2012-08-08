@@ -38,6 +38,7 @@ import java.net.URLConnection;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Cache based solely on the ETag/If-None-Match request/response headers
@@ -236,6 +237,10 @@ public class EtagCache implements Flushable {
 
   private final DiskLruCache cache;
 
+  private final AtomicInteger hits = new AtomicInteger(0);
+
+  private final AtomicInteger misses = new AtomicInteger(0);
+
   /**
    * Create cache
    *
@@ -248,6 +253,49 @@ public class EtagCache implements Flushable {
       throw new IOException("No SHA-1 algorithm available");
 
     cache = DiskLruCache.open(file, 1, 2, size);
+  }
+
+  /**
+   * Register a hit to this cache
+   *
+   * @return hit count
+   */
+  int registerHit() {
+    return hits.incrementAndGet();
+  }
+
+  /**
+   * Register a miss to this cache
+   *
+   * @return miss count
+   */
+  int registerMiss() {
+    return misses.incrementAndGet();
+  }
+
+  /**
+   * @return hits
+   */
+  public int getHits() {
+    return hits.intValue();
+  }
+
+  /**
+   * @return misses
+   */
+  public int getMisses() {
+    return misses.intValue();
+  }
+
+  /**
+   * Reset stats tracked for cache hits and misses
+   *
+   * @return this cache
+   */
+  public EtagCache resetStats() {
+    hits.set(0);
+    misses.set(0);
+    return this;
   }
 
   /**
