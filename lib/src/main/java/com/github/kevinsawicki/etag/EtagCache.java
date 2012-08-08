@@ -89,7 +89,7 @@ public class EtagCache {
 
     private final Snapshot snapshot;
 
-    CacheResponse(final String eTag, final InputStream body,
+    private CacheResponse(final String eTag, final InputStream body,
         final Snapshot snapshot) {
       this.eTag = eTag;
       this.body = body;
