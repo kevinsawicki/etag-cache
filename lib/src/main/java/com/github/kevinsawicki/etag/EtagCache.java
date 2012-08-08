@@ -15,6 +15,7 @@
  */
 package com.github.kevinsawicki.etag;
 
+import static com.github.kevinsawicki.http.HttpRequest.CHARSET_UTF8;
 import static com.github.kevinsawicki.http.HttpRequest.HEADER_ETAG;
 import static com.github.kevinsawicki.http.HttpRequest.METHOD_GET;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -196,7 +197,7 @@ public class EtagCache implements Flushable {
   private static String getKey(final String uri) {
     final byte[] input;
     try {
-      input = uri.getBytes("UTF-8");
+      input = uri.getBytes(CHARSET_UTF8);
     } catch (UnsupportedEncodingException e) {
       return null;
     }
