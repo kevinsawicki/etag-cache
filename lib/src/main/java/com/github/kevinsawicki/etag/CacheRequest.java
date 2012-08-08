@@ -135,7 +135,7 @@ public class CacheRequest extends HttpRequest {
 
   @Override
   public InputStream stream() throws HttpRequestException {
-    if (notModified())
+    if (notModified() && stream != null)
       return stream;
 
     if (ok()) {
