@@ -26,6 +26,7 @@ import com.jakewharton.DiskLruCache.Snapshot;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FilterInputStream;
+import java.io.Flushable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -40,7 +41,7 @@ import java.util.Arrays;
 /**
  * Cache based solely on the ETag/If-None-Match request/response headers
  */
-public class EtagCache {
+public class EtagCache implements Flushable {
 
   /**
    * One megabyte
@@ -341,5 +342,9 @@ public class EtagCache {
       return new CacheStream(input, output, editor, this);
     else
       return null;
+  }
+
+  public void flush() throws IOException {
+    cache.flush();
   }
 }
