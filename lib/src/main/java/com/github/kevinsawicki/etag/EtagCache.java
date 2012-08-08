@@ -78,12 +78,12 @@ public class EtagCache {
   public static class CacheResponse implements Closeable {
 
     /**
-     * ETag of response
+     * ETag of response, never null
      */
     public final String eTag;
 
     /**
-     * Body of response
+     * Body of response, never null
      */
     public final InputStream body;
 
