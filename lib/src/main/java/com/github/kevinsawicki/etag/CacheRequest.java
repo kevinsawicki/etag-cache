@@ -16,6 +16,7 @@
 package com.github.kevinsawicki.etag;
 
 import static java.net.HttpURLConnection.HTTP_NOT_MODIFIED;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 import com.github.kevinsawicki.etag.EtagCache.CacheResponse;
 import com.github.kevinsawicki.http.HttpRequest;
@@ -61,6 +62,8 @@ public class CacheRequest extends HttpRequest {
 
   private boolean etagAdded;
 
+  private boolean cached;
+
   /**
    * Create cache request
    *
@@ -91,6 +94,15 @@ public class CacheRequest extends HttpRequest {
     this.cache = cache;
   }
 
+  /**
+   * Was the body of the response served from the cache?
+   *
+   * @return true if served from the cache, false if served from the network
+   */
+  public boolean cached() {
+    return cached;
+  }
+
   private void closeCacheResponse() {
     if (response == null)
       return;
@@ -114,9 +126,10 @@ public class CacheRequest extends HttpRequest {
 
   @Override
   public int code() throws HttpRequestException {
-    final int code = super.code();
-
-    if (code != HTTP_NOT_MODIFIED)
+    int code = super.code();
+    if (code == HTTP_NOT_MODIFIED)
+      code = HTTP_OK;
+    else
       closeCacheResponse();
     return code;
   }
@@ -130,12 +143,14 @@ public class CacheRequest extends HttpRequest {
 
   @Override
   public InputStream stream() throws HttpRequestException {
-    if (notModified() && response != null) {
+    final int rawCode = super.code();
+    if (rawCode == HTTP_NOT_MODIFIED && response != null) {
       cache.registerHit();
+      cached = true;
       return response.body;
     }
 
-    if (ok()) {
+    if (rawCode == HTTP_OK) {
       cache.registerMiss();
       final InputStream streamWrapper = cache.put(getConnection());
       if (streamWrapper != null)

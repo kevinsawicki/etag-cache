@@ -21,6 +21,7 @@ import static com.github.kevinsawicki.http.HttpRequest.HEADER_IF_NONE_MATCH;
 import static java.net.HttpURLConnection.HTTP_NOT_MODIFIED;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -71,11 +72,14 @@ public class EtagCacheTest extends ServerTestCase {
     assertNull(cache.get(request.getConnection()));
     assertTrue(request.ok());
     assertEquals("hello", request.body());
+    assertFalse(request.cached());
     assertEquals(0, cache.getHits());
     assertEquals(1, cache.getMisses());
+
     request = CacheRequest.get(url, cache);
-    assertTrue(request.notModified());
+    assertTrue(request.ok());
     assertEquals("hello", request.body());
+    assertTrue(request.cached());
     assertNotNull(cache.get(request.getConnection()));
     assertEquals(1, cache.getHits());
     assertEquals(1, cache.getMisses());
@@ -111,11 +115,14 @@ public class EtagCacheTest extends ServerTestCase {
     assertNull(cache.get(request.getConnection()));
     assertTrue(request.ok());
     assertEquals("hello", request.body());
+    assertFalse(request.cached());
     assertEquals(0, cache.getHits());
     assertEquals(1, cache.getMisses());
+
     request = CacheRequest.get(url, cache);
     assertTrue(request.ok());
     assertEquals("hello", request.body());
+    assertFalse(request.cached());
     assertNotNull(cache.get(request.getConnection()));
     assertEquals(0, cache.getHits());
     assertEquals(2, cache.getMisses());
@@ -157,8 +164,9 @@ public class EtagCacheTest extends ServerTestCase {
     assertEquals(0, cache.getHits());
     assertEquals(1, cache.getMisses());
     request = CacheRequest.get(url, cache);
-    assertTrue(request.notModified());
-    request.body();
+    assertTrue(request.ok());
+    assertEquals("hello", request.body());
+    assertTrue(request.cached());
     assertEquals(1, cache.getHits());
     assertEquals(1, cache.getMisses());
     cache.resetStats();
