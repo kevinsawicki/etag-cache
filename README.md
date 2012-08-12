@@ -21,6 +21,8 @@ if (request.cached())
   System.out.println("Cache hit");
 else
   System.out.println("Cache miss");
+```
+
 ## Dependencies
 
   * [http-request](https://github.com/kevinsawicki/http-request)
