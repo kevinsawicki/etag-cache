@@ -25,5 +25,5 @@ else
 
 ## Dependencies
 
-  * [http-request](https://github.com/kevinsawicki/http-request)
-  * [DiskLruCache](https://github.com/JakeWharton/DiskLruCache)
+  * [kevinsawicki/http-request](https://github.com/kevinsawicki/http-request)
+  * [JakeWharton/DiskLruCache](https://github.com/JakeWharton/DiskLruCache)
