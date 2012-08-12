@@ -16,7 +16,7 @@ header set by the client.
 File file = new File("/tmp/http-cache");
 EtagCache cache = EtagCache.create(file, TEN_MB);
 CacheRequest request = CacheRequest.get("http://google.com", cache);
-System.out.println("Response was " + request.body();
+System.out.println("Response was " + request.body());
 if (request.cached())
   System.out.println("Cache hit");
 else
