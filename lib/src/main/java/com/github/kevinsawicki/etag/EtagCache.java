@@ -288,6 +288,15 @@ public class EtagCache implements Flushable {
   }
 
   /**
+   * Get current size of the cache
+   *
+   * @return size
+   */
+  public long getSize() {
+    return cache.size();
+  }
+
+  /**
    * Reset stats tracked for cache hits and misses
    *
    * @return this cache
