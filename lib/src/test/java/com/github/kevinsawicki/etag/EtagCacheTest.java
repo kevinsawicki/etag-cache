@@ -173,4 +173,58 @@ public class EtagCacheTest extends ServerTestCase {
     assertEquals(0, cache.getHits());
     assertEquals(0, cache.getMisses());
   }
+
+  /**
+   * Verify responses read from separate instance when flush to disk is enabled
+   * on first request
+   *
+   * @throws Exception
+   */
+  @Test
+  public void flushToDisk() throws Exception {
+    String url = setUp(new RequestHandler() {
+
+      @Override
+      public void handle(Request request, HttpServletResponse response) {
+        response.setHeader(HEADER_ETAG, "1234");
+        if ("1234".equals(request.getHeader(HEADER_IF_NONE_MATCH)))
+          response.setStatus(HTTP_NOT_MODIFIED);
+        else {
+          write("hello");
+          response.setStatus(HTTP_OK);
+        }
+      }
+    });
+
+    File file = File.createTempFile("cache", ".dir");
+    assertTrue(file.delete());
+    assertTrue(file.mkdirs());
+
+    EtagCache cache = EtagCache.create(file, ONE_MB);
+    assertNotNull(cache);
+    assertEquals(0, cache.getHits());
+    assertEquals(0, cache.getMisses());
+
+    CacheRequest request = CacheRequest.get(url, cache);
+    request.setFlushToDisk(true);
+    assertNull(cache.get(request.getConnection()));
+    assertTrue(request.ok());
+    assertEquals("hello", request.body());
+    assertFalse(request.cached());
+    assertEquals(0, cache.getHits());
+    assertEquals(1, cache.getMisses());
+
+    cache = EtagCache.create(file, ONE_MB);
+    assertNotNull(cache);
+    assertEquals(0, cache.getHits());
+    assertEquals(0, cache.getMisses());
+
+    request = CacheRequest.get(url, cache);
+    assertTrue(request.ok());
+    assertEquals("hello", request.body());
+    assertTrue(request.cached());
+    assertNotNull(cache.get(request.getConnection()));
+    assertEquals(1, cache.getHits());
+    assertEquals(0, cache.getMisses());
+  }
 }

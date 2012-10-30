@@ -64,6 +64,8 @@ public class CacheRequest extends HttpRequest {
 
   private boolean cached;
 
+  private boolean flushToDisk;
+
   /**
    * Create cache request
    *
@@ -92,6 +94,17 @@ public class CacheRequest extends HttpRequest {
     super(url, method);
 
     this.cache = cache;
+  }
+
+  /**
+   * Set where the cache should be flushed to disk after every response
+   *
+   * @param flush
+   * @return this request
+   */
+  public CacheRequest setFlushToDisk(final boolean flush) {
+    flushToDisk = flush;
+    return this;
   }
 
   /**
@@ -152,7 +165,7 @@ public class CacheRequest extends HttpRequest {
 
     if (rawCode == HTTP_OK) {
       cache.registerMiss();
-      final InputStream streamWrapper = cache.put(getConnection());
+      final InputStream streamWrapper = cache.put(getConnection(), flushToDisk);
       if (streamWrapper != null)
         return streamWrapper;
     }

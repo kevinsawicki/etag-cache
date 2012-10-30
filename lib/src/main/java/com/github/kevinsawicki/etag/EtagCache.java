@@ -124,29 +124,32 @@ public class EtagCache implements Flushable {
 
     private final Editor editor;
 
-    private final OutputStream cache;
+    private final OutputStream output;
 
-    private final Object lock;
+    private final EtagCache cache;
+
+    private final boolean flushOnClose;
 
     private boolean done;
 
     CacheStream(final InputStream input, final OutputStream output,
-        final Editor editor, final Object lock) {
+        final Editor editor, final EtagCache cache, final boolean flushOnClose) {
       super(input);
 
       this.editor = editor;
-      this.lock = lock;
-      this.cache = output;
+      this.cache = cache;
+      this.output = output;
+      this.flushOnClose = flushOnClose;
     }
 
     private void abort() {
-      synchronized (lock) {
+      synchronized (cache) {
         if (done)
           return;
         done = true;
       }
       try {
-        cache.close();
+        output.close();
       } catch (IOException ignored) {
         // Ignored
       }
@@ -162,7 +165,7 @@ public class EtagCache implements Flushable {
       final int read = super.read();
       if (read != -1)
         try {
-          cache.write(read);
+          output.write(read);
         } catch (IOException e) {
           abort();
         }
@@ -174,7 +177,7 @@ public class EtagCache implements Flushable {
       final int read = super.read(buffer, offset, count);
       if (read > 0)
         try {
-          cache.write(buffer, offset, read);
+          output.write(buffer, offset, read);
         } catch (IOException e) {
           abort();
         }
@@ -183,7 +186,7 @@ public class EtagCache implements Flushable {
 
     @Override
     public void close() throws IOException {
-      synchronized (lock) {
+      synchronized (cache) {
         if (done)
           return;
         done = true;
@@ -192,6 +195,13 @@ public class EtagCache implements Flushable {
       super.close();
 
       editor.commit();
+
+      if (flushOnClose)
+        try {
+          cache.flush();
+        } catch (IOException ignored) {
+          // Ignored
+        }
     }
   }
 
@@ -347,6 +357,19 @@ public class EtagCache implements Flushable {
    * @return input stream that will be cached, null if cannot be cached
    */
   public InputStream put(final URLConnection connection) {
+    return put(connection, false);
+  }
+
+  /**
+   * Create stream that will be cached after it is read
+   *
+   * @param connection
+   * @param flushCacheOnClose
+   *          true to flush the cache when the returned response is closed
+   * @return input stream that will be cached, null if cannot be cached
+   */
+  public InputStream put(final URLConnection connection,
+      final boolean flushCacheOnClose) {
     final String key = getKey(connection);
     if (key == null)
       return null;
@@ -397,7 +420,7 @@ public class EtagCache implements Flushable {
     }
 
     if (output != null)
-      return new CacheStream(input, output, editor, this);
+      return new CacheStream(input, output, editor, this, flushCacheOnClose);
     else
       return null;
   }
