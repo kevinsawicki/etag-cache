@@ -10,14 +10,14 @@ The library is available from [Maven Central](http://search.maven.org/#artifactd
 <dependency>
   <groupId>com.github.kevinsawicki</groupId>
   <artifactId>etag-cache</artifactId>
-  <version>0.1</version>
+  <version>0.2</version>
 </dependency>
 ```
 
 ## License
 
   * [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0.html)
-  
+
 ## Examples
 
 ### Making a request using a 10 MB cache
