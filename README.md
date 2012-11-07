@@ -4,7 +4,7 @@ Library to make transparent HTTP requests that can be served locally when
 the server replies with a `304 Not Modified` response for a `If-None-Match`
 header set by the client.
 
-The library is available from [Maven Central](http://search.maven.org/#artifactdetails%7Ccom.github.kevinsawicki%7Cetag-cache%7C0.1%7Cjar):
+The library is available from [Maven Central](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.github.kevinsawicki%22%20AND%20a%3A%22etag-cache%22):
 
 ```xml
 <dependency>
