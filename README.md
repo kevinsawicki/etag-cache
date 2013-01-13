@@ -1,4 +1,4 @@
-# etag-cache
+# etag-cache [![Build Status](https://travis-ci.org/kevinsawicki/etag-cache.png)](https://travis-ci.org/kevinsawicki/etag-cache)
 
 Library to make transparent HTTP requests that can be served locally when
 the server replies with a `304 Not Modified` response for a `If-None-Match`
