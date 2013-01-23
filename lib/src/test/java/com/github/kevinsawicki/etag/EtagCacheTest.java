@@ -16,6 +16,9 @@
 package com.github.kevinsawicki.etag;
 
 import static com.github.kevinsawicki.etag.EtagCache.ONE_MB;
+import static com.github.kevinsawicki.http.HttpRequest.CHARSET_UTF8;
+import static com.github.kevinsawicki.http.HttpRequest.ENCODING_GZIP;
+import static com.github.kevinsawicki.http.HttpRequest.HEADER_CONTENT_ENCODING;
 import static com.github.kevinsawicki.http.HttpRequest.HEADER_ETAG;
 import static com.github.kevinsawicki.http.HttpRequest.HEADER_IF_NONE_MATCH;
 import static java.net.HttpURLConnection.HTTP_NOT_MODIFIED;
@@ -27,6 +30,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.zip.GZIPOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -226,5 +231,52 @@ public class EtagCacheTest extends ServerTestCase {
     assertNotNull(cache.get(request.getConnection()));
     assertEquals(1, cache.getHits());
     assertEquals(0, cache.getMisses());
+  }
+
+  /**
+   * Test caching uncompressed responses
+   *
+   * @throws Exception
+   */
+  @Test
+  public void compressedRequest() throws Exception {
+    String url = setUp(new RequestHandler() {
+
+      @Override
+      public void handle(Request request, HttpServletResponse response) {
+        response.setHeader(HEADER_ETAG, "1234");
+        if ("1234".equals(request.getHeader(HEADER_IF_NONE_MATCH)))
+          response.setStatus(HTTP_NOT_MODIFIED);
+        else {
+          try {
+            response.setHeader(HEADER_CONTENT_ENCODING, ENCODING_GZIP);
+            GZIPOutputStream compressed = new GZIPOutputStream(
+                response.getOutputStream());
+            compressed.write("hello".getBytes(CHARSET_UTF8));
+            compressed.close();
+          } catch (IOException ignore) {
+            // Ignored
+          }
+          response.setStatus(HTTP_OK);
+        }
+      }
+    });
+
+    File file = File.createTempFile("cache", ".dir");
+    assertTrue(file.delete());
+    assertTrue(file.mkdirs());
+
+    EtagCache cache = EtagCache.create(file, ONE_MB);
+    assertNotNull(cache);
+
+    CacheRequest request = CacheRequest.get(url, cache);
+    assertTrue(request.ok());
+    assertEquals("hello", request.body());
+    assertFalse(request.cached());
+
+    request = CacheRequest.get(url, cache);
+    assertTrue(request.ok());
+    assertEquals("hello", request.body());
+    assertTrue(request.cached());
   }
 }

@@ -16,6 +16,8 @@
 package com.github.kevinsawicki.etag;
 
 import static com.github.kevinsawicki.http.HttpRequest.CHARSET_UTF8;
+import static com.github.kevinsawicki.http.HttpRequest.ENCODING_GZIP;
+import static com.github.kevinsawicki.http.HttpRequest.HEADER_CONTENT_ENCODING;
 import static com.github.kevinsawicki.http.HttpRequest.HEADER_ETAG;
 import static com.github.kevinsawicki.http.HttpRequest.METHOD_GET;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -39,6 +41,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.InflaterInputStream;
 
 /**
  * Cache based solely on the ETag/If-None-Match request/response headers
@@ -409,6 +413,10 @@ public class EtagCache implements Flushable {
     InputStream input;
     try {
       input = connection.getInputStream();
+      if (!(input instanceof InflaterInputStream)
+          && ENCODING_GZIP.equals(connection
+              .getHeaderField(HEADER_CONTENT_ENCODING)))
+        input = new GZIPInputStream(input);
     } catch (IOException e) {
       return null;
     }
