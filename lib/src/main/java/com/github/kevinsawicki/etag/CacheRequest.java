@@ -26,7 +26,12 @@ import java.io.InputStream;
 import java.net.URL;
 
 /**
- * Request that uses a cache
+ * Request that uses a cache.
+ * <p>
+ * This request will always auto-uncompress any gzip'ed response streams
+ * returned from {@link #stream()} regardless of the setting of
+ * {@link #uncompress(boolean)}. This is because streams are stored uncompressed
+ * in the cache and will be read uncompressed when a cached response is used.
  */
 public class CacheRequest extends HttpRequest {
 
@@ -154,6 +159,12 @@ public class CacheRequest extends HttpRequest {
     return super.disconnect();
   }
 
+  /**
+   * Get the input stream for this request.
+   * <p>
+   * The streams returned by this method will always auto-uncompress any gzip'ed
+   * responses regardless of the setting of {@link #uncompress(boolean)}.
+   */
   @Override
   public InputStream stream() throws HttpRequestException {
     final int rawCode = super.code();
