@@ -160,6 +160,22 @@ public class CacheRequest extends HttpRequest {
   }
 
   /**
+   * Get the eTag for request
+   *
+   * <p>
+   * If the http response includes an ETag that tag will
+   * always be used. If it does not include an ETag, the ETag will
+   * be restored from the cache
+   */
+  @Override
+  public String eTag() {
+    String tag = super.eTag();
+    if (tag == null && response != null)
+      tag = response.eTag;
+    return tag;
+  }
+
+  /**
    * Get the input stream for this request.
    * <p>
    * The streams returned by this method will always auto-uncompress any gzip'ed
