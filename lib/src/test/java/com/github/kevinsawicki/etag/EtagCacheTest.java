@@ -91,6 +91,54 @@ public class EtagCacheTest extends ServerTestCase {
   }
 
   /**
+   * Verify request from cache has eTag even when HTTP
+   * response does not contain
+   *
+   * @throws Exception
+   */
+  @Test
+  public void notModifiedResponseHasNoEtag() throws Exception {
+    String url = setUp(new RequestHandler() {
+
+      @Override
+      public void handle(Request request, HttpServletResponse response) {
+        if ("1234".equals(request.getHeader(HEADER_IF_NONE_MATCH)))
+          response.setStatus(HTTP_NOT_MODIFIED);
+        else {
+          response.setHeader(HEADER_ETAG, "1234");
+          write("hello");
+          response.setStatus(HTTP_OK);
+        }
+      }
+    });
+
+    File file = File.createTempFile("cache", ".dir");
+    assertTrue(file.delete());
+    assertTrue(file.mkdirs());
+
+    EtagCache cache = EtagCache.create(file, ONE_MB);
+    assertNotNull(cache);
+    assertEquals(0, cache.getHits());
+    assertEquals(0, cache.getMisses());
+
+    CacheRequest request = CacheRequest.get(url, cache);
+    assertTrue(request.ok());
+    assertFalse(request.cached());
+    assertEquals("1234", request.eTag());
+    assertNotNull(request.body());
+    assertEquals(0, cache.getHits());
+    assertEquals(1, cache.getMisses());
+
+    request = CacheRequest.get(url, cache);
+    assertTrue(request.ok());
+    assertNotNull(request.body());
+    assertTrue(request.cached());
+    assertEquals("1234", request.eTag());
+    assertEquals(1, cache.getHits());
+    assertEquals(1, cache.getMisses());
+  }
+
+  /**
    * Verify server that always ignores the If-None-Match header
    *
    * @throws Exception
