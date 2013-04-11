@@ -160,6 +160,26 @@ public class CacheRequest extends HttpRequest {
   }
 
   /**
+   * Get the eTag for request
+   *
+   * <p>
+   * If this request returned http code 304, this eTag value is based on
+   * the cached value available in the EtagCache. Otherwise, this
+   * value is read from the HttpRequest object
+   */
+  @Override
+  public String eTag() {
+    final int rawCode = super.code();
+    if (rawCode == HTTP_NOT_MODIFIED && response != null) {
+      return response.eTag;
+    }
+    else
+    {
+      return super.eTag();
+    }
+  }
+
+  /**
    * Get the input stream for this request.
    * <p>
    * The streams returned by this method will always auto-uncompress any gzip'ed
