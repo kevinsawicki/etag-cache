@@ -118,24 +118,18 @@ public class EtagCacheTest extends ServerTestCase {
 
     EtagCache cache = EtagCache.create(file, ONE_MB);
     assertNotNull(cache);
-    assertEquals(0, cache.getHits());
-    assertEquals(0, cache.getMisses());
 
     CacheRequest request = CacheRequest.get(url, cache);
     assertTrue(request.ok());
+    assertEquals("hello", request.body());
     assertFalse(request.cached());
     assertEquals("1234", request.eTag());
-    assertNotNull(request.body());
-    assertEquals(0, cache.getHits());
-    assertEquals(1, cache.getMisses());
 
     request = CacheRequest.get(url, cache);
     assertTrue(request.ok());
-    assertNotNull(request.body());
+    assertEquals("hello", request.body());
     assertTrue(request.cached());
     assertEquals("1234", request.eTag());
-    assertEquals(1, cache.getHits());
-    assertEquals(1, cache.getMisses());
   }
 
   /**
