@@ -160,17 +160,15 @@ public class CacheRequest extends HttpRequest {
   }
 
   /**
-   * Get the eTag for request
-   *
+   * Get the 'ETag' response header value for this request.
    * <p>
-   * If the http response includes an ETag that tag will
-   * always be used. If it does not include an ETag, the ETag will
-   * be restored from the cache
+   * This will return the cached value when not present in the response and the
+   * status code is a 304 (Not Modified).
    */
   @Override
   public String eTag() {
     String tag = super.eTag();
-    if (tag == null && response != null)
+    if (tag == null && response != null && super.code() == HTTP_NOT_MODIFIED)
       tag = response.eTag;
     return tag;
   }
