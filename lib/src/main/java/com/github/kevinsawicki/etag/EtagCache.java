@@ -22,9 +22,9 @@ import static com.github.kevinsawicki.http.HttpRequest.HEADER_ETAG;
 import static com.github.kevinsawicki.http.HttpRequest.METHOD_GET;
 import static java.net.HttpURLConnection.HTTP_OK;
 
-import com.jakewharton.DiskLruCache;
-import com.jakewharton.DiskLruCache.Editor;
-import com.jakewharton.DiskLruCache.Snapshot;
+import com.jakewharton.disklrucache.DiskLruCache;
+import com.jakewharton.disklrucache.DiskLruCache.Editor;
+import com.jakewharton.disklrucache.DiskLruCache.Snapshot;
 
 import java.io.Closeable;
 import java.io.File;
