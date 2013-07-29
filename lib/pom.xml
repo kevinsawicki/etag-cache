@@ -200,7 +200,7 @@
     <dependency>
       <groupId>com.github.kevinsawicki</groupId>
       <artifactId>http-request</artifactId>
-      <version>4.2</version>
+      <version>5.4</version>
     </dependency>
     <dependency>
       <groupId>com.jakewharton</groupId>
