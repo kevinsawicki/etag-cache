@@ -10,7 +10,7 @@ The library is available from [Maven Central](http://search.maven.org/#search%7C
 <dependency>
   <groupId>com.github.kevinsawicki</groupId>
   <artifactId>etag-cache</artifactId>
-  <version>0.5</version>
+  <version>0.6</version>
 </dependency>
 ```
 
