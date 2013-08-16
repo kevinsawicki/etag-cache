@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>etag-cache by kevinsawicki</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/main.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+
+      <header>
+        <h1>etag-cache</h1>
+        <p>HTTP requests backed by an ETag cache</p>
+      </header>
+
+      <div id="banner">
+        <span id="logo"></span>
+
+        <a href="https://github.com/kevinsawicki/etag-cache" class="button fork"><strong>View On GitHub</strong></a>
+        <div class="downloads">
+          <span>Downloads:</span>
+          <ul>
+            <li><a href="https://github.com/kevinsawicki/etag-cache/zipball/master" class="button">ZIP</a></li>
+            <li><a href="https://github.com/kevinsawicki/etag-cache/tarball/master" class="button">TAR</a></li>
+          </ul>
+        </div>
+      </div><!-- end banner -->
+
+    <div class="wrapper">
+      <nav>
+        <ul></ul>
+      </nav>
+      <section>
+        <h1>
+<a name="etag-cache-" class="anchor" href="#etag-cache-"><span class="octicon octicon-link"></span></a>etag-cache <a href="https://travis-ci.org/kevinsawicki/etag-cache"><img src="https://travis-ci.org/kevinsawicki/etag-cache.png" alt="Build Status"></a>
+</h1>
+
+<p>Library to make transparent HTTP requests that can be served locally when
+the server replies with a <code>304 Not Modified</code> response for a <code>If-None-Match</code>
+header set by the client.</p>
+
+<p>The library is available from <a href="http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.github.kevinsawicki%22%20AND%20a%3A%22etag-cache%22">Maven Central</a>:</p>
+
+<div class="highlight"><pre><span class="nt">&lt;dependency&gt;</span>
+  <span class="nt">&lt;groupId&gt;</span>com.github.kevinsawicki<span class="nt">&lt;/groupId&gt;</span>
+  <span class="nt">&lt;artifactId&gt;</span>etag-cache<span class="nt">&lt;/artifactId&gt;</span>
+  <span class="nt">&lt;version&gt;</span>0.6<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+</pre></div>
+
+<h2>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h2>
+
+<ul>
+<li><a href="http://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0</a></li>
+</ul><h2>
+<a name="examples" class="anchor" href="#examples"><span class="octicon octicon-link"></span></a>Examples</h2>
+
+<h3>
+<a name="making-a-request-using-a-10-mb-cache" class="anchor" href="#making-a-request-using-a-10-mb-cache"><span class="octicon octicon-link"></span></a>Making a request using a 10 MB cache</h3>
+
+<div class="highlight"><pre><span class="n">File</span> <span class="n">file</span> <span class="o">=</span> <span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="s">"/tmp/http-cache"</span><span class="o">);</span>
+<span class="n">EtagCache</span> <span class="n">cache</span> <span class="o">=</span> <span class="n">EtagCache</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="n">file</span><span class="o">,</span> <span class="n">TEN_MB</span><span class="o">);</span>
+<span class="n">CacheRequest</span> <span class="n">request</span> <span class="o">=</span> <span class="n">CacheRequest</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="s">"http://google.com"</span><span class="o">,</span> <span class="n">cache</span><span class="o">);</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Response was "</span> <span class="o">+</span> <span class="n">request</span><span class="o">.</span><span class="na">body</span><span class="o">());</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">cached</span><span class="o">())</span>
+  <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Cache hit"</span><span class="o">);</span>
+<span class="k">else</span>
+  <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Cache miss"</span><span class="o">);</span>
+</pre></div>
+
+<h2>
+<a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h2>
+
+<ul>
+<li><a href="https://github.com/kevinsawicki/http-request">kevinsawicki/http-request</a></li>
+<li><a href="https://github.com/JakeWharton/DiskLruCache">JakeWharton/DiskLruCache</a></li>
+</ul>
+      </section>
+      <footer>
+        <p>Project maintained by <a href="https://github.com/kevinsawicki">kevinsawicki</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
